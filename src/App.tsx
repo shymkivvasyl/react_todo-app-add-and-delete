@@ -41,6 +41,7 @@ export const App: React.FC = () => {
     return true;
   });
 
+
   function handleDelete(id: number) {
     setDeletingId(id);
 
@@ -55,6 +56,12 @@ export const App: React.FC = () => {
       .finally(() => {
         setDeletingId(null);
       });
+  }
+
+    function handleClearCompleted() {
+    completedTodos.forEach(todo => {
+      handleDelete(todo.id);
+    });
   }
 
   useEffect(() => {
@@ -216,11 +223,7 @@ export const App: React.FC = () => {
               className="todoapp__clear-completed"
               data-cy="ClearCompletedButton"
               disabled={!hasCompleted}
-              onClick={() => {
-                completedTodos.forEach(todo => {
-                  handleDelete(todo.id);
-                });
-              }}
+              onClick={handleClearCompleted}
             >
               Clear completed
             </button>
