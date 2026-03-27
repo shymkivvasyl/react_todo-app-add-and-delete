@@ -15,4 +15,10 @@ export const deleteTodo = (id: number) => {
   return client.delete(`/todos/${id}`);
 };
 
+export const updateTodo = (id: number) => {
+  return client.patch(`/todos/${id}`, {
+    completed: true,
+  });
+};
+
 // Add more methods here

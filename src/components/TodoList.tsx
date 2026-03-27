@@ -1,18 +1,28 @@
 import classNames from 'classnames';
 import { Todo } from '../types/Todo';
+import React from 'react';
 
 type Props = {
   todos: Todo[];
   handleDelete: (id: number) => void;
+  handleUpdate: (id: number) => void;
   deletingId: number | null;
+  updatingId: number | null;
 };
 
-export const TodoList = ({ todos, handleDelete, deletingId }: Props) => {
+export const TodoList = ({
+  todos,
+  handleDelete,
+  deletingId,
+  handleUpdate,
+  updatingId,
+}: Props) => {
   return (
     <section className="todoapp__main" data-cy="TodoList">
       {/* This is a completed todo */}
       {todos.map(todo => {
         const isDeleting = deletingId === todo.id;
+        const isUpdating = updatingId === todo.id;
 
         return (
           <div
@@ -25,11 +35,13 @@ export const TodoList = ({ todos, handleDelete, deletingId }: Props) => {
             <label className="todo__status-label">
               {/* eslint-disable jsx-a11y/label-has-associated-control*/}
               <input
-                readOnly
                 data-cy="TodoStatus"
                 type="checkbox"
                 className="todo__status"
                 checked={todo.completed}
+                onChange={() => {
+                  handleUpdate(todo.id);
+                }}
               />
             </label>
 
@@ -53,7 +65,7 @@ export const TodoList = ({ todos, handleDelete, deletingId }: Props) => {
             <div
               data-cy="TodoLoader"
               className={classNames('modal overlay', {
-                'is-active': isDeleting,
+                'is-active': isDeleting || isUpdating,
               })}
             >
               <div className="modal-background has-background-white-ter" />

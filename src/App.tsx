@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { UserWarning } from './UserWarning';
-import { addTodo, deleteTodo, getTodos, USER_ID } from './api/todos';
+import {
+  addTodo,
+  deleteTodo,
+  getTodos,
+  updateTodo,
+  USER_ID,
+} from './api/todos';
 import { Todo } from './types/Todo';
 import classNames from 'classnames';
 import { TodoList } from './components/TodoList';
@@ -14,6 +20,7 @@ export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<Status>('all');
@@ -41,7 +48,6 @@ export const App: React.FC = () => {
     return true;
   });
 
-
   function handleDelete(id: number) {
     setDeletingId(id);
 
@@ -58,17 +64,47 @@ export const App: React.FC = () => {
       });
   }
 
-    function handleClearCompleted() {
+  function handleClearCompleted() {
     completedTodos.forEach(todo => {
       handleDelete(todo.id);
     });
+  }
+
+  function handleUpdate(id: number) {
+    setUpdatingId(id);
+    const todo = todos.find(t => t.id === id);
+
+    if (!todo) {
+      setUpdatingId(null);
+
+      return;
+    }
+
+    const newCompleted = !todo.completed;
+
+    updateTodo(id)
+      .then(() => {
+        setTodos(prev =>
+          prev.map(item =>
+            item.id === id ? { ...item, completed: newCompleted } : item,
+          ),
+        );
+
+        inputRef.current?.focus();
+      })
+      .catch(() => {
+        setError('update');
+      })
+      .finally(() => {
+        setUpdatingId(null);
+      });
   }
 
   useEffect(() => {
     setIsLoading(true);
 
     getTodos()
-      .then(data => {
+      .then((data: React.SetStateAction<Todo[]>) => {
         setTodos(data);
       })
       .catch(() => {
@@ -138,7 +174,7 @@ export const App: React.FC = () => {
               setIsAdding(true);
 
               addTodo(newTodo)
-                .then(todoFromServer => {
+                .then((todoFromServer: Todo) => {
                   setTodos(prev => [...prev, todoFromServer]);
                   setTitle('');
                   setTempTodo(null);
@@ -172,6 +208,8 @@ export const App: React.FC = () => {
             todos={filteredTodos}
             handleDelete={handleDelete}
             deletingId={deletingId}
+            handleUpdate={handleUpdate}
+            updatingId={updatingId}
           />
         )}
         {tempTodo && <TodoItem todo={tempTodo} isLoading={true} />}
